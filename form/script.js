@@ -2941,6 +2941,9 @@
     if (question.type === "text") {
       const textarea = document.createElement("textarea");
       textarea.dataset.questionId = question.id;
+      if (question.placeholder) {
+        textarea.placeholder = question.placeholder;
+      }
       textarea.addEventListener("input", () => {
         debounceSave();
       });

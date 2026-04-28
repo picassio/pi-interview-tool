@@ -59,6 +59,7 @@ export interface Question {
 	conviction?: "strong" | "slight";
 	weight?: "critical" | "minor";
 	context?: string;
+	placeholder?: string;
 	content?: ContentBlock;
 	media?: MediaBlock | MediaBlock[];
 }
