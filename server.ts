@@ -2137,8 +2137,21 @@ export async function startInterviewServer(
 				reject(new Error("Failed to start server: invalid address"));
 				return;
 			}
-			const hostname = require("node:os").hostname();
-			const urlHost = bindHost === "0.0.0.0" ? hostname : bindHost;
+			// Resolve a LAN-reachable address when binding to all interfaces
+			let urlHost = bindHost;
+			if (bindHost === "0.0.0.0") {
+				const nets = require("node:os").networkInterfaces();
+				for (const ifaces of Object.values(nets)) {
+					for (const iface of (ifaces as any[]) || []) {
+						if (iface.family === "IPv4" && !iface.internal) {
+							urlHost = iface.address;
+							break;
+						}
+					}
+					if (urlHost !== "0.0.0.0") break;
+				}
+				if (urlHost === "0.0.0.0") urlHost = "localhost";
+			}
 			const url = `http://${urlHost}:${addr.port}/?session=${sessionToken}`;
 			cleanupOldRecoveryFiles();
 			const now = Date.now();

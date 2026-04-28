@@ -1340,8 +1340,12 @@ export default function (pi: ExtensionAPI) {
 								await openUrl(pi, url, settings.browser);
 							} catch {
 								// Browser open failed (headless/remote) — keep server running, show URL
-								if (pi.hasUI) {
-									pi.ui.notify(`Open interview in browser: ${url}`, "info");
+								const openMsg = `No browser detected. Open interview manually:\n\n  ${url}\n\nServer waiting for connection...`;
+								if (onUpdate) {
+									onUpdate({
+										content: [{ type: "text", text: openMsg }],
+										details: { status: "queued" as const, url, responses: [], queuedMessage: openMsg },
+									});
 								}
 							}
 						}
