@@ -16,6 +16,7 @@ export interface InterviewSettings {
 	browser?: string;
 	timeout?: number;
 	port?: number;
+	host?: string;  // Bind address. Default: "0.0.0.0". Use "127.0.0.1" to restrict to localhost.
 	theme?: InterviewThemeSettings;
 	snapshotDir?: string;      // Default: ~/.pi/interview-snapshots/
 	autoSaveOnSubmit?: boolean; // Default: true

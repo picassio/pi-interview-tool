@@ -224,6 +224,7 @@ export interface InterviewServerOptions {
 	cwd: string;
 	timeout: number;
 	port?: number;
+	host?: string;
 	verbose?: boolean;
 	theme?: InterviewThemeConfig;
 	snapshotDir?: string;
@@ -1325,7 +1326,7 @@ export async function startInterviewServer(
 	options: InterviewServerOptions,
 	callbacks: InterviewServerCallbacks
 ): Promise<InterviewServerHandle> {
-	const { questions, sessionToken, sessionId, cwd, timeout, port, verbose } = options;
+	const { questions, sessionToken, sessionId, cwd, timeout, port, host, verbose } = options;
 	const questionById = new Map<string, Question>();
 	for (const question of questions.questions) {
 		questionById.set(question.id, question);
@@ -2128,14 +2129,17 @@ export async function startInterviewServer(
 		};
 
 		server.once("error", onError);
-		server.listen(port ?? 0, "127.0.0.1", () => {
+		const bindHost = host ?? "0.0.0.0";
+		server.listen(port ?? 0, bindHost, () => {
 			server.off("error", onError);
 			const addr = server.address();
 			if (!addr || typeof addr === "string") {
 				reject(new Error("Failed to start server: invalid address"));
 				return;
 			}
-			const url = `http://localhost:${addr.port}/?session=${sessionToken}`;
+			const hostname = require("node:os").hostname();
+			const urlHost = bindHost === "0.0.0.0" ? hostname : bindHost;
+			const url = `http://${urlHost}:${addr.port}/?session=${sessionToken}`;
 			cleanupOldRecoveryFiles();
 			const now = Date.now();
 			sessionEntry = {

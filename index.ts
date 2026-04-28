@@ -1244,6 +1244,7 @@ export default function (pi: ExtensionAPI) {
 						cwd: ctx.cwd,
 						timeout: timeoutSeconds,
 						port: settings.port,
+						host: settings.host,
 						verbose,
 						theme: themeConfig,
 						snapshotDir,
@@ -1337,10 +1338,11 @@ export default function (pi: ExtensionAPI) {
 							}
 							try {
 								await openUrl(pi, url, settings.browser);
-							} catch (err) {
-								cleanup();
-								const message = err instanceof Error ? err.message : String(err);
-								reject(new Error(`Failed to open browser: ${message}`));
+							} catch {
+								// Browser open failed (headless/remote) — keep server running, show URL
+								if (pi.hasUI) {
+									pi.ui.notify(`Open interview in browser: ${url}`, "info");
+								}
 							}
 						}
 					})
