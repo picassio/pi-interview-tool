@@ -1336,16 +1336,28 @@ export default function (pi: ExtensionAPI) {
 									glimpseWin = null;
 								}
 							}
-							try {
-								await openUrl(pi, url, settings.browser);
-							} catch {
-								// Browser open failed (headless/remote) — keep server running, show URL
-								const openMsg = `No browser detected. Open interview manually:\n\n  ${url}\n\nServer waiting for connection...`;
+							// Detect headless/remote: no DISPLAY and not macOS/Windows
+							const isHeadless = os.platform() === "linux" && !process.env.DISPLAY && !process.env.WAYLAND_DISPLAY;
+							if (isHeadless) {
+								// No desktop environment — show URL for manual access
+								const openMsg = `No desktop environment detected. Open interview manually:\n\n  ${url}\n\nServer listening, waiting for connection...`;
 								if (onUpdate) {
 									onUpdate({
 										content: [{ type: "text", text: openMsg }],
 										details: { status: "queued" as const, url, responses: [], queuedMessage: openMsg },
 									});
+								}
+							} else {
+								try {
+									await openUrl(pi, url, settings.browser);
+								} catch {
+									const openMsg = `Could not open browser. Open interview manually:\n\n  ${url}\n\nServer listening, waiting for connection...`;
+									if (onUpdate) {
+										onUpdate({
+											content: [{ type: "text", text: openMsg }],
+											details: { status: "queued" as const, url, responses: [], queuedMessage: openMsg },
+										});
+									}
 								}
 							}
 						}
